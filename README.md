@@ -10,41 +10,57 @@ To write a python program to perform stop and wait protocol
 6. Stop the Program
 ## PROGRAM
 ##SERVER
-```
+~~~
 import socket
-s=socket.socket()
-s.bind(('localhost',8000))
-s.listen(5)
-c,addr=s.accept()
+
+s = socket.socket()
+s.bind(('localhost', 8000))
+s.listen(1)
+print("Server ready...")
+
+c, _ = s.accept()
 while True:
- ClientMessage=c.recv(1024).decode()
- print("Client > ",ClientMessage)
- msg=input("Server > ")
- c.send(msg.encode())
-```
+    msg = c.recv(1024).decode()
+    if not msg:
+        break
+    print("Received:", msg)
+    c.send(b"ACK")
+    if msg == "exit":
+        break
+
+c.close()
+s.close()
+~~~
+
 ##CLIENT
 ~~~
 import socket
-s=socket.socket()
-s.connect(('localhost',8000))
-while True:
- msg=input("Client > ")
- s.send(msg.encode())
- print("Server > ",s.recv(1024).decode())
-~~~
 
+c = socket.socket()
+c.connect(('localhost', 8000))
+c.settimeout(5)
+
+while True:
+    msg = input("Message: ")
+    c.send(msg.encode())
+
+    if msg == "exit":
+        break
+
+    try:
+        if c.recv(1024).decode() == "ACK":
+            print("ACK received")
+    except socket.timeout:
+        print("No ACK, retransmitting...")
+
+c.close()
+~~~
 
 ## OUTPUT
-##SERVER
 
 
-<img width="810" height="212" alt="Screenshot 2026-05-21 122334" src="https://github.com/user-attachments/assets/3d6a3cd7-0f29-4efd-bd67-927d6d1548d8" />
+<img width="1054" height="323" alt="image" src="https://github.com/user-attachments/assets/8c6547a0-bc21-4499-a13d-95c09e3db3e4" />
 
-
-##CLIENT
-
-
-<img width="947" height="151" alt="Screenshot 2026-05-21 122352" src="https://github.com/user-attachments/assets/d73d12bd-7c98-404d-9442-9fe21af2c8bb" />
 
 
 ## RESULT
